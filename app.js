@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
+
 const bodyParser  = require("body-parser");
 const cors = require("cors");
+const Recipe = require("./models/recipe")
 
 const url = 'mongodb://localhost:27017/what-to-eat';
 
@@ -12,16 +14,6 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-
-const recipeSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  ingredients: Array,
-  directions: Array,
-  tags: Array
-});
-
-const Recipe = mongoose.model('Recipe', recipeSchema);
 
 // Recipe.create({
 //   name: "Spicy Chicken",
@@ -51,14 +43,14 @@ app.post('/recipes', (req, res) => {
 app.put('/recipes', (req, res) => {
   Recipe.findByIdAndUpdate(req.body._id, req.body, (err, updatedRecipe) => {
     if (err) console.log(err);
-    res.statusCode(200)
+    res.status(200)
   })
 });
 
 app.delete('/recipes', (req, res) => {
   Recipe.findByIdAndRemove(req.body._id, (err) => {
     if (err) console.log(err);
-    res.statusCode(200)
+    res.status(200)
   })
   
 });
