@@ -1,0 +1,26 @@
+{
+  "name": "what-to-eat-backend",
+  "version": "1.0.0",
+  "description": "backend for the app what to eat",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IAMQIANYANG/what-to-eat-backend.git"
+  },
+  "author": "Cheska (Qian)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IAMQIANYANG/what-to-eat-backend/issues"
+  },
+  "homepage": "https://github.com/IAMQIANYANG/what-to-eat-backend#readme",
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "cors": "^2.8.1",
+    "express": "^4.14.1",
+    "mongodb": "^2.2.22",
+    "mongoose": "^4.8.1"
+  }
+}
