@@ -50,24 +50,24 @@ const strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
 
 passport.use(strategy);
 
-app.use(function(req, res, next) {
-  let token = req.headers['authorization'];
-  if (!token) return next();
-
-  token = token.replace('Bearer ', '');
-
-  jwt.verify(token, jwtOptions.secretOrKey, function(err, user) {
-    if (err) {
-      return res.status(401).json({
-        success: false,
-        message: 'Please register Log in using a valid email to submit posts'
-      });
-    } else {
-      req.user = user; //set the user to req so other routes can use it
-      next();
-    }
-  });
-});
+// app.use(function(req, res, next) {
+//   let token = req.headers['authorization'];
+//   if (!token) return next();
+//
+//   token = token.replace('Bearer ', '');
+//
+//   jwt.verify(token, jwtOptions.secretOrKey, function(err, user) {
+//     if (err) {
+//       return res.status(401).json({
+//         success: false,
+//         message: 'Please register Log in using a valid email to submit posts'
+//       });
+//     } else {
+//       req.user = user; //set the user to req so other routes can use it
+//       next();
+//     }
+//   });
+// });
 
 
 // Recipe.create({
@@ -126,19 +126,20 @@ app.post('/register', function(req, res, next) {
     const token = utility.generateToken(user);
 
     res.json({
-      user: {username: user.username, userid: user._id},
+      userInfo: {username: user.username, userid: user._id},
       token: token
   });
   });
 });
 
 app.post('/users/login', function(req, res) {
+  console.log(req.body)
   User
     .findOne({username: req.body.username})
     .exec(function(err, user) {
       if (err) throw err;
       if (!user) {
-        return res.status(404).json({
+        return res.status(401).json({
           error: true,
           message: 'Username or Password is Wrong'
       });
@@ -146,21 +147,42 @@ app.post('/users/login', function(req, res) {
       bcrypt.compare(req.body.password, user.password,
       function(err, valid) {
         if (!valid) {
-          return res.status(404).json({
+          return res.status(401).json({
             error: true,
             message: 'Username or Password is Wrong'
         });
         }
-
         const token = utility.generateToken(user);
         res.json({
-          user: {username: user.username, userid: user._id},
+          userInfo: {username: user.username, userid: user._id},
           token: token
       });
       });
     });
 });
 
+//get current user from token
+app.get('/me/from/token', function(req, res, next) {
+  // check header or url parameters or post parameters for token
+  var token = req.body.token || req.query.token;
+  if (!token) {
+    return res.status(401).json({message: 'Must pass token'});
+  }
+// Check token that was passed by decoding token using secret
+  jwt.verify(token, process.env.JWT_SECRET, function(err, user) {
+    if (err) throw err;
+    //return user using the id from w/in JWTToken
+    User.findById({
+    '_id': user._id
+  }, function(err, user) {
+      if (err) throw err;
+      res.json({
+        user: {username: user.username, userid: user._id},
+        token: token
+    });
+    });
+  });
+});
 
 
 app.listen(3001, () => console.log("server has started!"));
