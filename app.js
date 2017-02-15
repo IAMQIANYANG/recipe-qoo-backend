@@ -93,7 +93,12 @@ app.get('/recipes', (req, res) => {
 app.post('/recipes', (req, res) => {
   Recipe.create(req.body, (err, recipe) => {
     if (err) console.log(err);
-    res.json(recipe);
+    else {
+      recipe.author.username = req.body.username;
+      recipe.author.id = req.body.userid;
+      recipe.save();
+      res.json(recipe);
+    }
   })
 });
 
@@ -115,13 +120,20 @@ app.delete('/recipes', (req, res) => {
 app.post('/register', function(req, res, next) {
   const body = req.body;
   const hash = bcrypt.hashSync(body.password.trim(), 10);
-  var user = new User({
+  const user = new User({
     username: body.username.trim(),
     password: hash
   });
   
   user.save(function(err, user) { 
-    if (err) console.log(err);
+    if (err) {
+      console.log("Err");
+      return res.json({
+      error: true,
+      message: 'Username has been used. Please try another one'
+    });
+    }
+    
     console.log(user);
     const token = utility.generateToken(user);
 
@@ -133,11 +145,10 @@ app.post('/register', function(req, res, next) {
 });
 
 app.post('/users/login', function(req, res) {
-  console.log(req.body)
   User
     .findOne({username: req.body.username})
     .exec(function(err, user) {
-      if (err) throw err;
+      if (err) res.json(err);
       if (!user) {
         return res.status(401).json({
           error: true,
@@ -162,15 +173,15 @@ app.post('/users/login', function(req, res) {
 });
 
 //get current user from token
-app.get('/me/from/token', function(req, res, next) {
+app.get('/users/me', function(req, res, next) {
   // check header or url parameters or post parameters for token
-  var token = req.body.token || req.query.token;
+  const token = req.body.token || req.query.token;
   if (!token) {
     return res.status(401).json({message: 'Must pass token'});
   }
 // Check token that was passed by decoding token using secret
-  jwt.verify(token, process.env.JWT_SECRET, function(err, user) {
-    if (err) throw err;
+  jwt.verify(token, jwtOptions.secretOrKey, function(err, user) {
+    if (err) console.log(err);
     //return user using the id from w/in JWTToken
     User.findById({
     '_id': user._id
@@ -178,7 +189,6 @@ app.get('/me/from/token', function(req, res, next) {
       if (err) throw err;
       res.json({
         user: {username: user.username, userid: user._id},
-        token: token
     });
     });
   });
