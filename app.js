@@ -34,7 +34,7 @@ jwtOptions.secretOrKey = 'ik ben ajacied';
 const strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
   console.log('payload received', jwt_payload);
 
-  User.findOne({username: jwt_payload.username}, function (err, user) {
+  User.findById(jwt_payload._id, function (err, user) {
     if (err) {
       return next(err, false);
     }
@@ -50,25 +50,6 @@ const strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
 
 passport.use(strategy);
 
-// app.use(function(req, res, next) {
-//   let token = req.headers['authorization'];
-//   if (!token) return next();
-//
-//   token = token.replace('Bearer ', '');
-//
-//   jwt.verify(token, jwtOptions.secretOrKey, function(err, user) {
-//     if (err) {
-//       return res.status(401).json({
-//         success: false,
-//         message: 'Please register Log in using a valid email to submit posts'
-//       });
-//     } else {
-//       req.user = user; //set the user to req so other routes can use it
-//       next();
-//     }
-//   });
-// });
-
 
 // Recipe.create({
 //   name: "Spicy Chicken",
@@ -82,6 +63,25 @@ passport.use(strategy);
 // });
 
 
+const checkRecipeOwnership = (req, res, next) => {
+  if(passport.authenticate('jwt', { session: false})){
+    Recipe.findById(req.body._id, function(err, foundRecipe){
+      if(err){
+        console.log(err);
+        res.json(err)
+      }  else {
+        if(foundRecipe.author.id.equals(req.body.author.id)) {
+          next();
+        } else {
+          console.log(err);
+        }
+      }
+    });
+  } else {
+    console.log(err);
+  }
+};
+
 //recipes routes
 app.get('/recipes', (req, res) => {
   Recipe.find({}, (err, recipes) => {
@@ -90,26 +90,28 @@ app.get('/recipes', (req, res) => {
   })
 });
 
-app.post('/recipes', (req, res) => {
+app.post('/recipes', passport.authenticate('jwt', { session: false}), (req, res) => {
   Recipe.create(req.body, (err, recipe) => {
     if (err) console.log(err);
     else {
       recipe.author.username = req.body.username;
       recipe.author.id = req.body.userid;
+      console.log(recipe.author)
       recipe.save();
+      console.log(recipe)
       res.json(recipe);
     }
   })
 });
 
-app.put('/recipes', (req, res) => {
+app.put('/recipes', checkRecipeOwnership, (req, res) => {
   Recipe.findByIdAndUpdate(req.body._id, req.body, (err, updatedRecipe) => {
     if (err) console.log(err);
     res.status(200)
   })
 });
 
-app.delete('/recipes', (req, res) => {
+app.delete('/recipes', checkRecipeOwnership, (req, res) => {
   Recipe.findByIdAndRemove(req.body._id, (err) => {
     if (err) console.log(err);
     res.status(200)
@@ -127,14 +129,12 @@ app.post('/register', function(req, res, next) {
   
   user.save(function(err, user) { 
     if (err) {
-      console.log("Err");
-      return res.json({
+      return res.status(401).json({
       error: true,
       message: 'Username has been used. Please try another one'
     });
     }
     
-    console.log(user);
     const token = utility.generateToken(user);
 
     res.json({
@@ -173,9 +173,9 @@ app.post('/users/login', function(req, res) {
 });
 
 //get current user from token
-app.get('/users/me', function(req, res, next) {
+app.get('/users/me', function(req, res) {
   // check header or url parameters or post parameters for token
-  const token = req.body.token || req.query.token;
+  const token = req.query.token;
   if (!token) {
     return res.status(401).json({message: 'Must pass token'});
   }
@@ -188,7 +188,7 @@ app.get('/users/me', function(req, res, next) {
   }, function(err, user) {
       if (err) throw err;
       res.json({
-        user: {username: user.username, userid: user._id},
+        user: {username: user.username, userid: user._id}
     });
     });
   });
