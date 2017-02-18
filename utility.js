@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 const ExtractJwt = require("passport-jwt").ExtractJwt;
+const configure = require("./configure")
+
 
 const jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeader();
-jwtOptions.secretOrKey = 'ik ben ajacied';
+jwtOptions.secretOrKey = configure.secretKey;
 
 module.exports.generateToken = (user) => {
 

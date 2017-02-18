@@ -190,9 +190,7 @@ app.get('/users/me', function(req, res, next) {
       return res.send("error")
     }
     //return user using the id from w/in JWTToken
-    User.findById({
-    '_id': user._id
-  }, function(err, user) {
+    User.findById(user._id, function(err, user) {
       if (err) throw err;
       res.json({
         user: {username: user.username, userid: user._id}
