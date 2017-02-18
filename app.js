@@ -10,11 +10,12 @@ const bcrypt = require("bcrypt");
 const Recipe = require("./models/recipe");
 const User = require("./models/user");
 const utility = require("./utility");
+const configure = require("./configure")
 
 const app = express();
 
-const url = 'mongodb://localhost:27017/what-to-eat';
-mongoose.connect(url);
+// mongodb://recipeqooowner:recipeqooowner@ds153719.mlab.com:53719/recipe-qoo
+mongoose.connect(configure.mongodburl);
 
 app.use(cors());
 
@@ -29,7 +30,7 @@ app.use(passport.initialize());
 
 const jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeader();
-jwtOptions.secretOrKey = 'ik ben ajacied';
+jwtOptions.secretOrKey = configure.secretKey;
 
 const strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
   console.log('payload received', jwt_payload);
@@ -195,4 +196,4 @@ app.get('/users/me', function(req, res) {
 });
 
 
-app.listen(3001, () => console.log("server has started!"));
+app.listen(process.env.PORT, process.env.IP, () => console.log("server has started!"));
