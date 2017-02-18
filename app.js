@@ -14,7 +14,6 @@ const configure = require("./configure")
 
 const app = express();
 
-// mongodb://recipeqooowner:recipeqooowner@ds153719.mlab.com:53719/recipe-qoo
 mongoose.connect(configure.mongodburl);
 
 app.use(cors());
