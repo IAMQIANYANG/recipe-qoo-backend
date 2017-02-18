@@ -14,10 +14,13 @@ const configure = require("./configure")
 
 const app = express();
 
-mongoose.connect(configure.mongodburl);
+url = 'mongodb://recipeqooowner:recipeqooowner@ds153719.mlab.com:53719/recipe-qoo';
+
+// mongoose.connect(configure.mongodburl);
+
+mongoose.connect(url);
 
 app.use(cors());
-
 app.use(bodyParser.urlencoded({
   extended: true
 }));
