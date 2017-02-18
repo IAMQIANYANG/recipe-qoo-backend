@@ -14,11 +14,10 @@ const configure = require("./configure")
 
 const app = express();
 
-url = 'mongodb://recipeqooowner:recipeqooowner@ds153719.mlab.com:53719/recipe-qoo';
 
-// mongoose.connect(configure.mongodburl);
-
-mongoose.connect(url);
+console.log(process.env.PORT)
+console.log(process.env.IP)
+mongoose.connect(configure.mongodburl);
 
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -176,7 +175,7 @@ app.post('/users/login', function(req, res) {
 });
 
 //get current user from token
-app.get('/users/me', function(req, res) {
+app.get('/users/me', function(req, res, next) {
   // check header or url parameters or post parameters for token
   const token = req.query.token;
   if (!token) {
@@ -184,7 +183,12 @@ app.get('/users/me', function(req, res) {
   }
 // Check token that was passed by decoding token using secret
   jwt.verify(token, jwtOptions.secretOrKey, function(err, user) {
-    if (err) console.log(err);
+    if (err) {
+      return next(err); 
+    }
+    if(!user) {
+      return res.send("error")
+    }
     //return user using the id from w/in JWTToken
     User.findById({
     '_id': user._id
