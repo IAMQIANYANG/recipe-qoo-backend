@@ -72,12 +72,18 @@ router.get('/users/me', function (req, res, next) {
     if (err) {
       return next(err);
     }
+    
     if (!user) {
-      return res.status(401).json({message: 'Please sign in again!'})
+      return res.status(401).json({
+        error:true,
+        message: 'Please sign in again!'})
     }
     
-    User.findById(user._id, function (err, user) {
-      if (err) throw err;
+    User.findById(user._id, function (err, user, next) {
+      if (err) {
+        return next(err);
+      }
+      
       res.json({
         user: {username: user.username, userid: user._id}
       });
