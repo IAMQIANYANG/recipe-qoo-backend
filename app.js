@@ -26,4 +26,6 @@ passport.use(utility.strategy);
 app.use(recipesRoutes);
 app.use(usersRoutes);
 
-app.listen(process.env.PORT, process.env.IP, () => console.log("server has started!"));
+// app.listen(process.env.PORT, process.env.IP, () => console.log("server has started!"));
+
+app.listen(3001, () => console.log("server has started!"));
