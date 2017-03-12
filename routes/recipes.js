@@ -22,6 +22,10 @@ const checkRecipeOwnership = (req, res, next) => {
   }
 };
 
+router.get('/', (req, res) => {
+  res.send("keep me awake...")
+});
+
 router.get('/recipes', (req, res, next) => {
   Recipe.find({}, (err, recipes) => {
     if (err) {
